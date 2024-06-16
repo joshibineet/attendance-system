@@ -1,0 +1,40 @@
+import { GetMemberschema } from '@/modules/members/GetMembersTypes';
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { PaginatedResponseType } from '../types/reponseTypes';
+import { apiPaths, setHeaders } from './apiConstants';
+
+export const baseApi = createApi({
+  reducerPath: 'baseApi',
+  baseQuery: fetchBaseQuery({
+    baseUrl: apiPaths.baseUrl,
+    prepareHeaders: async (headers) => {
+      await setHeaders(headers);
+      return headers;
+    },
+  }),
+  tagTypes: [
+    'Roles',
+    'Permissions',
+    'UserPermissions',
+    'ContentTypes',
+    'Users',
+    'Profiles',
+  ],
+  endpoints: (builder) => ({
+    getUsers: builder.query<PaginatedResponseType<GetMemberschema>, any>({
+      query: () => apiPaths.getMembersUrl,
+      providesTags: ['Users'],
+    }),
+    createUser: builder.mutation({
+      query: (newUser) => ({
+        url: apiPaths.getMembersUrl,
+        method: 'POST',
+        body: newUser,
+      }),
+      invalidatesTags: ['Users'],
+    }),
+  }),
+});
+
+export const { useGetUsersQuery, useCreateUserMutation } = baseApi;
+

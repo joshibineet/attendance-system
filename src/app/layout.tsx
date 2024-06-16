@@ -1,3 +1,4 @@
+import Provider from '@/core/redux/provider';
 import { Inter } from 'next/font/google';
 import React from 'react';
 import './globals.css';
@@ -18,7 +19,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.className}>
       <body className="bg-whiteShade">
-        {children}
+        <Provider>{children}</Provider>
         <div id="deleteWarningDialog"></div>
       </body>
     </html>

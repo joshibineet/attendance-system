@@ -6,12 +6,21 @@ interface FormCardProps {
   className?: string;
 }
 
-const FormCards = ({ children, className }: FormCardProps) => {
+const FormCard = ({ children, onSubmit, className }: FormCardProps) => {
   return (
-    <form className={`border rounded-xl flex flex-col max-w-5xl ` + className}>
+    <form
+      className={`border rounded-xl flex flex-col max-w-5xl ` + className}
+      onSubmit={(event) => {
+        event.preventDefault();
+        if (!onSubmit) {
+          return;
+        }
+        onSubmit(event);
+      }}
+    >
       {children}
     </form>
   );
 };
 
-export default FormCards;
+export default FormCard;

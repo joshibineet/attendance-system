@@ -1,10 +1,15 @@
 'use client';
+import { useGetUsersQuery } from '@/core/api/apiQuery';
 import PaginationNav from '@/core/ui/components/Pagination';
 import { TableCard, tableStyles } from '@/core/ui/karma/src/components';
-import Buttons from '@/core/ui/karma/src/components/Buttons';
-import { Edit2, Eye, Trash } from 'iconsax-react';
 
 const TableListing = () => {
+  const { data: paginatedMembers, isLoading } = useGetUsersQuery({
+    refetchOnMountOrArgChange: true,
+  });
+
+  if (isLoading) return <div>Loading...</div>;
+
   return (
     <>
       <TableCard
@@ -20,39 +25,27 @@ const TableListing = () => {
       >
         <thead>
           <tr className={tableStyles.table_thead_tr}>
-            <th className={tableStyles.table_th + ` w-56`}>REF. ID</th>
-            <th className={tableStyles.table_th}>TITLE</th>
-            <th className={tableStyles.table_th}>DATE</th>
-            <th className={tableStyles.table_th + ` w-36`}>ACTIONS</th>
+            <th className={`${tableStyles.table_th} w-80`}>ID</th>
+            <th className={tableStyles.table_th}>Order</th>
+            <th className={tableStyles.table_th}>Full Name</th>
           </tr>
         </thead>
         <tbody>
-          <tr className={tableStyles.table_tbody_tr}>
-            <td className={tableStyles.table_td + ` w-56`}>{'1234'}</td>
-            <td className={tableStyles.table_td}>{'Hello'}</td>
-            <td className={tableStyles.table_td}>{'27/2/2024'}</td>
-            <td className={tableStyles.table_td + ` flex gap-2 w-36`}>
-              <Buttons
-                className="h-8 w-8"
-                type="link"
-                kind="secondary"
-                href=""
-                prefix={<Eye size={18} variant="Bold" />}
-              />
-              <Buttons
-                className="h-8 w-8"
-                type="link"
-                href=""
-                prefix={<Edit2 size={18} variant="Bold" />}
-              />
-              <Buttons
-                className="h-8 w-8"
-                prefix={<Trash size={18} variant="Bold" />}
-                kind="danger"
-                type="button"
-              />
-            </td>
-          </tr>
+          {paginatedMembers?.results &&
+          Array.isArray(paginatedMembers?.results) &&
+          paginatedMembers?.results.length > 0 ? (
+            paginatedMembers?.results.map((member) => (
+              <tr key={member.id} className={tableStyles.table_tbody_tr}>
+                <td className={`${tableStyles.table_td} w-80`}>{member.id}</td>
+                <td className={tableStyles.table_td}>{member.order}</td>
+                <td className={tableStyles.table_td}>{member.fullname}</td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan={3}>No users found</td>
+            </tr>
+          )}
         </tbody>
       </TableCard>
     </>

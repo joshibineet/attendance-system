@@ -31,9 +31,7 @@ class Selector extends React.Component {
 
   render() {
     return (
-      <div
-        className={`flex flex-col last-of-type:mb-0 ` + this.props.className}
-      >
+      <div className={` flex-col last-of-type:mb-0 ` + this.props.className}>
         {this.props.label ? (
           <label htmlFor={this.props.id} className="text-sm mb-2 text-dark-500">
             {this.props.label}
@@ -106,6 +104,7 @@ class Selector extends React.Component {
                 borderRadius: 6,
                 backgroundColor: '#F5F8FA',
                 flexWrap: 'wrap',
+                display: 'flex',
               }),
             }}
             className={`w-full border rounded-md bg-transparent text-sm focus:outline-none custom-scrollbar `}

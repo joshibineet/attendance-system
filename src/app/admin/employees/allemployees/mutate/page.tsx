@@ -1,64 +1,87 @@
 'use client';
-
+import { useCreateUserMutation, useGetUsersQuery } from '@/core/api/apiQuery';
 import { TextField } from '@/core/ui/karma/src/components';
 import Buttons from '@/core/ui/karma/src/components/Buttons';
 import FormCard from '@/core/ui/karma/src/components/Form/FormCard';
 import FormGroup from '@/core/ui/karma/src/components/Form/FormGroup';
+import { nonempty } from '@/core/utils/formUtils';
+import { useFormik } from 'formik';
+import { z } from 'zod';
+import { toFormikValidate } from 'zod-formik-adapter';
+
+const memberSchema = z.object({
+  id: z.number().optional(),
+  order: z.number(),
+  fullname: z.string().pipe(nonempty),
+});
+
+type MemberType = z.infer<typeof memberSchema>;
 
 const SpotCheckMutationPage = () => {
+  const [createUser, { isLoading }] = useCreateUserMutation();
+  const { refetch: refetchUsers } = useGetUsersQuery();
+
+  const handleSubmit = async (data: MemberType) => {
+    try {
+      await createUser(data).unwrap();
+      alert('User created successfully');
+      formik.resetForm();
+      refetchUsers();
+    } catch (error) {
+      console.error('Failed to create user:', error);
+      alert('Failed to create user');
+    }
+  };
+
+  const formik = useFormik({
+    enableReinitialize: true,
+    initialValues: {
+      id: undefined,
+      order: 0,
+      fullname: '',
+    },
+    validate: toFormikValidate(memberSchema),
+    onSubmit: handleSubmit,
+  });
+
   return (
-    <FormCard className="m-4">
+    <FormCard className="m-4" onSubmit={formik.handleSubmit}>
       <FormGroup title="General">
         <div className="flex flex-col mb-2">
-          <TextField id="title" type="text" label="Title" className="flex-1" />
+          <TextField
+            id="order"
+            type="number"
+            label="Order"
+            className="flex-1"
+            required
+            {...formik.getFieldProps('order')}
+          />
+          {!!formik.errors.order && (
+            <div className="text-red-500 text-sm">{formik.errors.order}</div>
+          )}
         </div>
         <div className="flex flex-col mb-2">
           <TextField
-            id="description"
+            id="fullname"
             type="text"
-            isMulti
-            rows={3}
-            label="Description"
+            label="Full Name"
             className="flex-1"
-          />
-        </div>
-        <div className="flex flex-col mb-2">
-          Date
-          <input
-            type="date"
-            id="date"
-            name="date"
-            className="h-12 border rounded-md bg-slate-50 outline-none px-3"
             required
+            {...formik.getFieldProps('fullname')}
           />
-          <label htmlFor="date" className="text-sm mt-2 text-dark-500"></label>
-        </div>
-        <div className="flex space-x-4 mb-4 mt-5">
-          <div>
-            <h1>Status</h1>
-            <select className="h-10 p-2 w-[270px] border border-gray-300 rounded-md">
-              {['None', 'In', 'Out'].map((option, idx) => (
-                <option key={idx} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <h1>Shift</h1>
-            <select className="h-10 p-2 w-[270px] border border-gray-300 rounded-md">
-              {['None', 'Morning', 'Day', 'Absent'].map((option, idx) => (
-                <option key={idx} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </div>
+          {!!formik.errors.fullname && (
+            <div className="text-red-500 text-sm">{formik.errors.fullname}</div>
+          )}
         </div>
       </FormGroup>
       <div className="flex justify-end gap-2 m-4">
-        <Buttons text="Submit" className="h-8 w-fit" />
-        <Buttons text="Cancel" className="h-8 w-fit" />
+        <Buttons
+          text="Submit"
+          className="h-8 w-fit"
+          type="submit"
+          isLoading={isLoading}
+        />
+        <Buttons text="Cancel" className="h-8 w-fit" type="reset" />
       </div>
     </FormCard>
   );
