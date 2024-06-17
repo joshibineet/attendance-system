@@ -1,14 +1,15 @@
+import membersApi from '@/modules/members/GetMembersApi';
 import { configureStore } from '@reduxjs/toolkit';
 import { baseApi } from '../api/apiQuery';
 
 export const store = () => {
     return configureStore({
         reducer: {
-            baseApi: baseApi.reducer
+            baseApi: baseApi.reducer,
+            membersApi: membersApi.reducer
         },
         middleware(getDefaultMiddleware) {
             return getDefaultMiddleware().concat(baseApi.middleware)
-
         },
     })
 

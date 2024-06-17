@@ -2,11 +2,16 @@
 import { useGetUsersQuery } from '@/core/api/apiQuery';
 import PaginationNav from '@/core/ui/components/Pagination';
 import { TableCard, tableStyles } from '@/core/ui/karma/src/components';
+import { useState } from 'react';
 
 const TableListing = () => {
-  const { data: paginatedMembers, isLoading } = useGetUsersQuery({
-    refetchOnMountOrArgChange: true,
-  });
+  const [pageIndex, setPageIndex] = useState(0);
+  const { data: paginatedMembers, isLoading } = useGetUsersQuery(
+    pageIndex + 1,
+    {
+      refetchOnMountOrArgChange: true,
+    }
+  );
 
   if (isLoading) return <div>Loading...</div>;
 
@@ -14,14 +19,33 @@ const TableListing = () => {
     <>
       <TableCard
         footer={
-          <PaginationNav
-            gotoPage={() => {}}
-            canPreviousPage={true}
-            canNextPage={true}
-            pageCount={10}
-            pageIndex={1}
-          />
+          paginatedMembers && paginatedMembers.results.length > 0 ? (
+            <PaginationNav
+              gotoPage={(value: number) => {
+                setPageIndex(value);
+              }}
+              canPreviousPage={pageIndex > 0}
+              canNextPage={
+                pageIndex < paginatedMembers.pagination.total_page - 1
+              }
+              pageCount={paginatedMembers.pagination.total_page}
+              pageIndex={paginatedMembers.pagination.current_page - 1}
+            />
+          ) : (
+            <></>
+          )
         }
+        // footer={
+        //   <PaginationNav
+        //     gotoPage={(pageNumber) => {
+        //       handleGotoPage();
+        //     }}
+        //     canPreviousPage={true}
+        //     canNextPage={true}
+        //     pageCount={10}
+        //     pageIndex={1}
+        //   />
+        // }
       >
         <thead>
           <tr className={tableStyles.table_thead_tr}>

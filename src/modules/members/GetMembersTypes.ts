@@ -1,5 +1,6 @@
 export type GetMemberschema = {
     id: number,
+    ref_id: string;
     order: number,
     fullname: string,
     created_on: string,

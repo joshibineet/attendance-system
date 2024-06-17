@@ -21,8 +21,8 @@ export const baseApi = createApi({
     'Profiles',
   ],
   endpoints: (builder) => ({
-    getUsers: builder.query<PaginatedResponseType<GetMemberschema>, any>({
-      query: () => apiPaths.getMembersUrl,
+    getUsers: builder.query<PaginatedResponseType<GetMemberschema>, number>({
+      query: (page = 1) => `${apiPaths.getMembersUrl}?page=${page}`,
       providesTags: ['Users'],
     }),
     createUser: builder.mutation({
