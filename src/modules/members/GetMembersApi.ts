@@ -1,6 +1,7 @@
-import { apiPaths } from '@/core/api/apiConstants';
+import { apiPaths, setHeaders } from '@/core/api/apiConstants';
 import { baseApi } from '@/core/api/apiQuery';
 import { PaginatedResponseType } from '@/core/types/reponseTypes';
+import { toast } from 'react-toastify';
 import { GetMemberschema } from './GetMembersTypes';
 
 
@@ -30,6 +31,48 @@ const membersApi = baseApi
                     return response as PaginatedResponseType<GetMemberschema>;
                 },
             }),
+
+            // Get each Member
+
+            getEachMember: builder.query<GetMemberschema, string>({
+                query: (id) => `${apiPaths.getMembersUrl}${id}/`,
+                serializeQueryArgs: ({ queryArgs, endpointName, }) => {
+                    return endpointName + queryArgs;
+                },
+
+                providesTags: (result, error, ref_id) => {
+                    return [{ type: 'GetMemberschema', id: ref_id }];
+                },
+            }),
+
+            // Update the Member
+
+            updateFlight: builder.mutation<GetMemberschema, Partial<GetMemberschema>>(
+                {
+                    query: ({ ref_id, ...payload }) => ({
+                        url: `${apiPaths.getMembersUrl}/${ref_id}/`,
+                        method: 'PATCH',
+                        body: payload,
+                        prepareHeaders: async (headers: Headers) => await setHeaders(headers),
+                    }),
+                    invalidatesTags: (result, error, { ref_id }) => [
+                        { type: 'GetMemberschema', ref_id },
+                    ],
+                    async onQueryStarted(payload, { queryFulfilled }) {
+                        try {
+                            await queryFulfilled;
+                            toast.success('Member Updated.');
+                        } catch (err) {
+                            console.log(err);
+                            toast.error('Failed updating a member.');
+                        }
+                    },
+                    transformResponse: (response) => {
+                        return response as GetMemberschema;
+                    },
+                }
+            ),
+
         }),
         overrideExisting: true,
     });

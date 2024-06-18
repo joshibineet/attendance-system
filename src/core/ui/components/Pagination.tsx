@@ -62,6 +62,7 @@ export default function PaginationNav({
         pageIndices.push(pageNumberAfter);
       }
     });
+
     return pageIndices.map((pageIndexToMap) => (
       <li key={pageIndexToMap}>
         <Button
@@ -72,6 +73,7 @@ export default function PaginationNav({
       </li>
     ));
   }, [gotoPage, pageCount, pageIndex]);
+  // console.log('current page:', pageCount);
   return (
     <div className="flex justify-between">
       <div></div>
@@ -84,7 +86,7 @@ export default function PaginationNav({
                 {/* <FaChevronLeft size="0.6rem" className="-translate-x-1/2" /> */}
               </div>
             }
-            onClick={() => gotoPage(0)}
+            onClick={() => gotoPage(pageIndex - 1)}
             disabled={!canPreviousPage}
           />
         </li>
@@ -97,7 +99,7 @@ export default function PaginationNav({
                 {/* <FaChevronRight size="0.6rem" className="-translate-x-1/2" /> */}
               </div>
             }
-            onClick={() => gotoPage(pageCount - 1)}
+            onClick={() => gotoPage(pageIndex + 1)}
             disabled={!canNextPage}
           />
         </li>

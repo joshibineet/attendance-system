@@ -1,11 +1,16 @@
 'use client';
-import { useCreateUserMutation, useGetUsersQuery } from '@/core/api/apiQuery';
+import { useCreateUserMutation } from '@/core/api/apiQuery';
+import { useAppDispatch, useAppSelector } from '@/core/redux/clientStore';
+import { RootState } from '@/core/redux/store';
 import { TextField } from '@/core/ui/karma/src/components';
 import Buttons from '@/core/ui/karma/src/components/Buttons';
 import FormCard from '@/core/ui/karma/src/components/Form/FormCard';
 import FormGroup from '@/core/ui/karma/src/components/Form/FormGroup';
 import { nonempty } from '@/core/utils/formUtils';
+import membersApi from '@/modules/members/GetMembersApi';
 import { useFormik } from 'formik';
+import { useParams } from 'next/navigation';
+import { useEffect } from 'react';
 import { z } from 'zod';
 import { toFormikValidate } from 'zod-formik-adapter';
 
@@ -17,16 +22,31 @@ const memberSchema = z.object({
 
 type MemberType = z.infer<typeof memberSchema>;
 
-const EmployeesMutationPage = () => {
-  const [createUser, { isLoading }] = useCreateUserMutation();
-  const { refetch: refetchUsers } = useGetUsersQuery();
+const EmployeesEachPage = (props: any) => {
+  const dispatch = useAppDispatch();
+  const userId = useParams();
+  console.log(userId.ref_id);
+  const [createUser, { isLoading: isCreateUserLoading }] =
+    useCreateUserMutation();
+
+  useEffect(() => {
+    dispatch(
+      membersApi.endpoints.getEachMember.initiate(userId.ref_id as string)
+    );
+  }, [dispatch]);
+
+  const member = useAppSelector(
+    (state: RootState) =>
+      state.baseApi.queries[`getEachMember${userId.ref_id}`]?.data as any
+  );
+
+  // console.log('member', member);
 
   const handleSubmit = async (data: MemberType) => {
     try {
       await createUser(data).unwrap();
       alert('User created successfully');
       formik.resetForm();
-      refetchUsers();
     } catch (error) {
       console.error('Failed to create user:', error);
       alert('Failed to create user');
@@ -36,9 +56,9 @@ const EmployeesMutationPage = () => {
   const formik = useFormik({
     enableReinitialize: true,
     initialValues: {
-      id: undefined,
-      order: 0,
-      fullname: '',
+      id: member?.id ?? undefined,
+      order: member?.order ?? 0,
+      fullname: member?.fullname ?? '',
     },
     validate: toFormikValidate(memberSchema),
     onSubmit: handleSubmit,
@@ -79,7 +99,7 @@ const EmployeesMutationPage = () => {
           text="Submit"
           className="h-8 w-fit"
           type="submit"
-          isLoading={isLoading}
+          isLoading={isCreateUserLoading}
         />
         <Buttons text="Cancel" className="h-8 w-fit" type="reset" />
       </div>
@@ -87,4 +107,4 @@ const EmployeesMutationPage = () => {
   );
 };
 
-export default EmployeesMutationPage;
+export default EmployeesEachPage;

@@ -2,6 +2,8 @@
 import { useGetUsersQuery } from '@/core/api/apiQuery';
 import PaginationNav from '@/core/ui/components/Pagination';
 import { TableCard, tableStyles } from '@/core/ui/karma/src/components';
+import Buttons from '@/core/ui/karma/src/components/Buttons';
+import { Edit2, Eye, Trash } from 'iconsax-react';
 import { useState } from 'react';
 
 const TableListing = () => {
@@ -14,6 +16,7 @@ const TableListing = () => {
   );
 
   if (isLoading) return <div>Loading...</div>;
+  // console.log(paginatedMembers);
 
   return (
     <>
@@ -35,17 +38,6 @@ const TableListing = () => {
             <></>
           )
         }
-        // footer={
-        //   <PaginationNav
-        //     gotoPage={(pageNumber) => {
-        //       handleGotoPage();
-        //     }}
-        //     canPreviousPage={true}
-        //     canNextPage={true}
-        //     pageCount={10}
-        //     pageIndex={1}
-        //   />
-        // }
       >
         <thead>
           <tr className={tableStyles.table_thead_tr}>
@@ -63,6 +55,30 @@ const TableListing = () => {
                 <td className={`${tableStyles.table_td} w-80`}>{member.id}</td>
                 <td className={tableStyles.table_td}>{member.order}</td>
                 <td className={tableStyles.table_td}>{member.fullname}</td>
+                <td className={tableStyles.table_td + ` flex gap-2 w-10`}>
+                  <Buttons
+                    className="h-8 w-8"
+                    // type="link"
+                    kind="secondary"
+                    prefix={<Eye size={18} variant="Bold" />}
+                  />
+                  <Buttons
+                    className="h-8 w-8"
+                    type="link"
+                    href={`/admin/employees/each/${member.id}`}
+                    prefix={<Edit2 size={18} variant="Bold" />}
+                  />
+                  <Buttons
+                    className="h-8 w-8"
+                    prefix={<Trash size={18} variant="Bold" />}
+                    kind="danger"
+                    // type="button"
+                    // onClick={() => {
+                    //   setOnDelete(survey);
+                    //   openModal();
+                    // }}
+                  />
+                </td>
               </tr>
             ))
           ) : (
