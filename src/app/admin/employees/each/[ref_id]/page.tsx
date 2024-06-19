@@ -1,5 +1,4 @@
 'use client';
-import { useCreateUserMutation } from '@/core/api/apiQuery';
 import { useAppDispatch, useAppSelector } from '@/core/redux/clientStore';
 import { RootState } from '@/core/redux/store';
 import { TextField } from '@/core/ui/karma/src/components';
@@ -7,7 +6,10 @@ import Buttons from '@/core/ui/karma/src/components/Buttons';
 import FormCard from '@/core/ui/karma/src/components/Form/FormCard';
 import FormGroup from '@/core/ui/karma/src/components/Form/FormGroup';
 import { nonempty } from '@/core/utils/formUtils';
-import membersApi from '@/modules/members/GetMembersApi';
+import membersApi, {
+  useCreateUserMutation,
+  useUpdateMemberMutation,
+} from '@/modules/members/GetMembersApi';
 import { useFormik } from 'formik';
 import { useParams } from 'next/navigation';
 import { useEffect } from 'react';
@@ -24,6 +26,7 @@ type MemberType = z.infer<typeof memberSchema>;
 
 const EmployeesEachPage = (props: any) => {
   const dispatch = useAppDispatch();
+  const [updateMember] = useUpdateMemberMutation();
   const userId = useParams();
   console.log(userId.ref_id);
   const [createUser, { isLoading: isCreateUserLoading }] =
@@ -33,30 +36,30 @@ const EmployeesEachPage = (props: any) => {
     dispatch(
       membersApi.endpoints.getEachMember.initiate(userId.ref_id as string)
     );
-  }, [dispatch]);
+  }, [dispatch, userId.ref_id]);
 
   const member = useAppSelector(
     (state: RootState) =>
       state.baseApi.queries[`getEachMember${userId.ref_id}`]?.data as any
   );
 
-  // console.log('member', member);
-
   const handleSubmit = async (data: MemberType) => {
     try {
+      // console.log('data', data);
+      await updateMember({ ...data }).unwrap();
+      alert('User Updated successfully');
       await createUser(data).unwrap();
-      alert('User created successfully');
       formik.resetForm();
     } catch (error) {
-      console.error('Failed to create user:', error);
-      alert('Failed to create user');
+      console.error('Failed Update user:', error);
+      alert('Failed to Update user');
     }
   };
 
   const formik = useFormik({
     enableReinitialize: true,
     initialValues: {
-      id: member?.id ?? undefined,
+      id: member?.id ?? 0,
       order: member?.order ?? 0,
       fullname: member?.fullname ?? '',
     },

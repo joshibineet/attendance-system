@@ -20,7 +20,7 @@ type MemberType = z.infer<typeof memberSchema>;
 const EmployeesMutationPage = () => {
   const [createUser, { isLoading }] = useCreateUserMutation();
   const { refetch: refetchUsers } = useGetUsersQuery();
-
+  console.log(EmployeesMutationPage);
   const handleSubmit = async (data: MemberType) => {
     try {
       await createUser(data).unwrap();

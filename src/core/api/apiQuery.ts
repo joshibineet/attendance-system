@@ -1,6 +1,4 @@
-import { GetMemberschema } from '@/modules/members/GetMembersTypes';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { PaginatedResponseType } from '../types/reponseTypes';
 import { apiPaths, setHeaders } from './apiConstants';
 
 export const baseApi = createApi({
@@ -34,6 +32,7 @@ export const baseApi = createApi({
       invalidatesTags: ['Users'],
     }),
   }),
+  // endpoints: () => { }
 });
 
 export const { useGetUsersQuery, useCreateUserMutation } = baseApi;

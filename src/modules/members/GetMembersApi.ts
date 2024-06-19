@@ -1,4 +1,4 @@
-import { apiPaths, setHeaders } from '@/core/api/apiConstants';
+import { apiPaths } from '@/core/api/apiConstants';
 import { baseApi } from '@/core/api/apiQuery';
 import { PaginatedResponseType } from '@/core/types/reponseTypes';
 import { toast } from 'react-toastify';
@@ -47,14 +47,17 @@ const membersApi = baseApi
 
             // Update the Member
 
-            updateFlight: builder.mutation<GetMemberschema, Partial<GetMemberschema>>(
+            updateMember: builder.mutation<GetMemberschema, Partial<GetMemberschema>>(
                 {
-                    query: ({ ref_id, ...payload }) => ({
-                        url: `${apiPaths.getMembersUrl}/${ref_id}/`,
-                        method: 'PATCH',
-                        body: payload,
-                        prepareHeaders: async (headers: Headers) => await setHeaders(headers),
-                    }),
+                    query: ({ ref_id, ...payload }) => {
+                        console.log(payload)
+                        return ({
+                            url: `${apiPaths.getMembersUrl}${payload.id}/`,
+                            method: 'PATCH',
+                            body: payload,
+                            // prepareHeaders: async (headers: Headers) => await setHeaders(headers),
+                        })
+                    },
                     invalidatesTags: (result, error, { ref_id }) => [
                         { type: 'GetMemberschema', ref_id },
                     ],
@@ -78,4 +81,6 @@ const membersApi = baseApi
     });
 
 export default membersApi;
+export const { useGetUsersQuery, useCreateUserMutation, useUpdateMemberMutation } = membersApi;
+
 
