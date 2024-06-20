@@ -18,22 +18,21 @@ export const baseApi = createApi({
     'Users',
     'Profiles',
   ],
-  endpoints: (builder) => ({
-    getUsers: builder.query<PaginatedResponseType<GetMemberschema>, number>({
-      query: (page = 1) => `${apiPaths.getMembersUrl}?page=${page}`,
-      providesTags: ['Users'],
-    }),
-    createUser: builder.mutation({
-      query: (newUser) => ({
-        url: apiPaths.getMembersUrl,
-        method: 'POST',
-        body: newUser,
-      }),
-      invalidatesTags: ['Users'],
-    }),
+  endpoints: () => ({
+    // getUsers: builder.query<PaginatedResponseType<GetMemberschema>, number>({
+    //   query: (page = 1) => `${apiPaths.getMembersUrl}?page=${page}`,
+    //   providesTags: ['Users'],
+    // }),
+    // createUser: builder.mutation({
+    //   query: (newUser) => ({
+    //     url: apiPaths.getMembersUrl,
+    //     method: 'POST',
+    //     body: newUser,
+    //   }),
+    //   invalidatesTags: ['Users'],
+    // }),
   }),
   // endpoints: () => { }
 });
 
-export const { useGetUsersQuery, useCreateUserMutation } = baseApi;
 

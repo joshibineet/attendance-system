@@ -1,25 +1,68 @@
 'use client';
-import { useGetUsersQuery } from '@/core/api/apiQuery';
+import { useAppDispatch } from '@/core/redux/clientStore';
+import AlertDialog from '@/core/ui/components/AlertDialog';
 import PaginationNav from '@/core/ui/components/Pagination';
 import { TableCard, tableStyles } from '@/core/ui/karma/src/components';
 import Buttons from '@/core/ui/karma/src/components/Buttons';
+import membersApi, {
+  useDeleteMemberMutation,
+  useGetMembersQuery,
+} from '@/modules/members/GetMembersApi';
 import { Edit2, Eye, Trash } from 'iconsax-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const TableListing = () => {
+  const dispatch = useAppDispatch();
   const [pageIndex, setPageIndex] = useState(0);
-  const { data: paginatedMembers, isLoading } = useGetUsersQuery(
+
+  const [modalIsOpen, setIsOpen] = useState(false);
+  const [onDelete, setOnDelete] = useState<any>(undefined);
+
+  function openModal() {
+    setIsOpen(true);
+  }
+
+  function closeModal() {
+    setIsOpen(false);
+  }
+
+  useEffect(() => {
+    dispatch(membersApi.endpoints.getMembers.initiate(pageIndex + 1));
+  }, [dispatch, pageIndex]);
+
+  const { data: paginatedMembers, isLoading } = useGetMembersQuery(
     pageIndex + 1,
     {
       refetchOnMountOrArgChange: true,
     }
   );
 
+  const [deleteMember, { isLoading: isDeleting, isSuccess }] =
+    useDeleteMemberMutation();
+
   if (isLoading) return <div>Loading...</div>;
-  // console.log(paginatedMembers);
 
   return (
     <>
+      <AlertDialog
+        isOpen={modalIsOpen}
+        deleteContent={onDelete?.fullname}
+        onClickNo={() => {
+          closeModal();
+        }}
+        onClickYes={async () => {
+          if (onDelete) {
+            try {
+              await deleteMember(onDelete.id).unwrap();
+              dispatch(membersApi.endpoints.getMembers.initiate(pageIndex + 1));
+            } catch (error) {
+              console.error('Failed to delete the member:', error);
+            }
+          }
+          closeModal();
+          setOnDelete(undefined);
+        }}
+      />
       <TableCard
         footer={
           paginatedMembers && paginatedMembers.results.length > 0 ? (
@@ -58,7 +101,6 @@ const TableListing = () => {
                 <td className={tableStyles.table_td + ` flex gap-2 w-10`}>
                   <Buttons
                     className="h-8 w-8"
-                    // type="link"
                     kind="secondary"
                     prefix={<Eye size={18} variant="Bold" />}
                   />
@@ -72,11 +114,11 @@ const TableListing = () => {
                     className="h-8 w-8"
                     prefix={<Trash size={18} variant="Bold" />}
                     kind="danger"
-                    // type="button"
-                    // onClick={() => {
-                    //   setOnDelete(survey);
-                    //   openModal();
-                    // }}
+                    type="button"
+                    onClick={() => {
+                      setOnDelete(member);
+                      openModal();
+                    }}
                   />
                 </td>
               </tr>

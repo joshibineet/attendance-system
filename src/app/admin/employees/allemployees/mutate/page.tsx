@@ -1,10 +1,13 @@
 'use client';
-import { useCreateUserMutation, useGetUsersQuery } from '@/core/api/apiQuery';
 import { TextField } from '@/core/ui/karma/src/components';
 import Buttons from '@/core/ui/karma/src/components/Buttons';
 import FormCard from '@/core/ui/karma/src/components/Form/FormCard';
 import FormGroup from '@/core/ui/karma/src/components/Form/FormGroup';
 import { nonempty } from '@/core/utils/formUtils';
+import {
+  useCreateUserMutation,
+  useGetMembersQuery,
+} from '@/modules/members/GetMembersApi';
 import { useFormik } from 'formik';
 import { z } from 'zod';
 import { toFormikValidate } from 'zod-formik-adapter';
@@ -19,14 +22,14 @@ type MemberType = z.infer<typeof memberSchema>;
 
 const EmployeesMutationPage = () => {
   const [createUser, { isLoading }] = useCreateUserMutation();
-  const { refetch: refetchUsers } = useGetUsersQuery();
-  console.log(EmployeesMutationPage);
+  const { refetch: refetchMembers } = useGetMembersQuery(1);
+
   const handleSubmit = async (data: MemberType) => {
     try {
       await createUser(data).unwrap();
       alert('User created successfully');
       formik.resetForm();
-      refetchUsers();
+      refetchMembers();
     } catch (error) {
       console.error('Failed to create user:', error);
       alert('Failed to create user');
@@ -45,7 +48,7 @@ const EmployeesMutationPage = () => {
   });
 
   return (
-    <FormCard className="m-4  " onSubmit={formik.handleSubmit}>
+    <FormCard className="m-4" onSubmit={formik.handleSubmit}>
       <FormGroup title="General">
         <div className="flex flex-col mb-2">
           <TextField

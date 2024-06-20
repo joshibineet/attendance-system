@@ -1,18 +1,17 @@
 'use client';
-import { useAppDispatch, useAppSelector } from '@/core/redux/clientStore';
-import { RootState } from '@/core/redux/store';
-import { TextField } from '@/core/ui/karma/src/components';
+import { useAppDispatch } from '@/core/redux/clientStore';
 import Buttons from '@/core/ui/karma/src/components/Buttons';
 import FormCard from '@/core/ui/karma/src/components/Form/FormCard';
 import FormGroup from '@/core/ui/karma/src/components/Form/FormGroup';
+import TextField from '@/core/ui/karma/src/components/TextField';
 import { nonempty } from '@/core/utils/formUtils';
-import membersApi, {
+import {
   useCreateUserMutation,
+  useGetEachMemberQuery,
   useUpdateMemberMutation,
 } from '@/modules/members/GetMembersApi';
 import { useFormik } from 'formik';
-import { useParams } from 'next/navigation';
-import { useEffect } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import { z } from 'zod';
 import { toFormikValidate } from 'zod-formik-adapter';
 
@@ -24,32 +23,23 @@ const memberSchema = z.object({
 
 type MemberType = z.infer<typeof memberSchema>;
 
-const EmployeesEachPage = (props: any) => {
+const EmployeesEachPage = () => {
   const dispatch = useAppDispatch();
   const [updateMember] = useUpdateMemberMutation();
   const userId = useParams();
-  console.log(userId.ref_id);
+  const { data: member } = useGetEachMemberQuery(userId.ref_id as string);
+  const router = useRouter();
+  console.log('userId.ref_id', userId.ref_id);
   const [createUser, { isLoading: isCreateUserLoading }] =
     useCreateUserMutation();
 
-  useEffect(() => {
-    dispatch(
-      membersApi.endpoints.getEachMember.initiate(userId.ref_id as string)
-    );
-  }, [dispatch, userId.ref_id]);
-
-  const member = useAppSelector(
-    (state: RootState) =>
-      state.baseApi.queries[`getEachMember${userId.ref_id}`]?.data as any
-  );
-
   const handleSubmit = async (data: MemberType) => {
     try {
-      // console.log('data', data);
       await updateMember({ ...data }).unwrap();
-      alert('User Updated successfully');
-      await createUser(data).unwrap();
+      // await createUser(data).unwrap();
       formik.resetForm();
+      alert('User Updated successfully');
+      router.push('/admin/employees/allemployees/');
     } catch (error) {
       console.error('Failed Update user:', error);
       alert('Failed to Update user');
@@ -68,7 +58,7 @@ const EmployeesEachPage = (props: any) => {
   });
 
   return (
-    <FormCard className="m-4  " onSubmit={formik.handleSubmit}>
+    <FormCard className="m-4" onSubmit={formik.handleSubmit}>
       <FormGroup title="General">
         <div className="flex flex-col mb-2">
           <TextField

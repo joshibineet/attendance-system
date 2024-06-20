@@ -4,18 +4,17 @@ import { PaginatedResponseType } from '@/core/types/reponseTypes';
 import { toast } from 'react-toastify';
 import { GetMemberschema } from './GetMembersTypes';
 
-
 const membersApi = baseApi
     .enhanceEndpoints({ addTagTypes: ['GetMemberschema'] })
     .injectEndpoints({
         endpoints: (builder) => ({
             getMembers: builder.query<PaginatedResponseType<GetMemberschema>, number>({
-                query: (page = 1) => `${apiPaths.getMembersUrl}/?page=${page}`,
+                query: (page = 1) => `${apiPaths.getMembersUrl}?page=${page}`,
                 providesTags: (result) =>
                     result
                         ? [
                             ...result.results.map(
-                                ({ ref_id }) => ({ type: 'GetMemberschema', id: ref_id } as const)
+                                ({ id }) => ({ type: 'GetMemberschema', id: id } as const)
                             ),
                             { type: 'GetMemberschema', id: 'LIST' },
                         ]
@@ -27,60 +26,78 @@ const membersApi = baseApi
                     return currentArg !== previousArg;
                 },
                 transformResponse: (response: any): PaginatedResponseType<GetMemberschema> => {
-                    console.log(response);
+
                     return response as PaginatedResponseType<GetMemberschema>;
                 },
             }),
 
-            // Get each Member
+            createUser: builder.mutation({
+                query: (newUser) => ({
+                    url: apiPaths.getMembersUrl,
+                    method: 'POST',
+                    body: newUser,
+                }),
+                invalidatesTags: ['GetMemberschema'],
+            }),
+
+            // Get Member
 
             getEachMember: builder.query<GetMemberschema, string>({
-                query: (id) => `${apiPaths.getMembersUrl}${id}/`,
-                serializeQueryArgs: ({ queryArgs, endpointName, }) => {
+                query: (id) => `${apiPaths.getMembersUrl}${id}`,
+                serializeQueryArgs: ({ queryArgs, endpointName }) => {
                     return endpointName + queryArgs;
                 },
-
                 providesTags: (result, error, ref_id) => {
                     return [{ type: 'GetMemberschema', id: ref_id }];
                 },
+                transformResponse: (response: any) => {
+                    console.log(" get each member response", response);
+                    return response
+                }
             }),
 
-            // Update the Member
+            // Update Member
 
-            updateMember: builder.mutation<GetMemberschema, Partial<GetMemberschema>>(
-                {
-                    query: ({ ref_id, ...payload }) => {
-                        console.log(payload)
-                        return ({
-                            url: `${apiPaths.getMembersUrl}${payload.id}/`,
-                            method: 'PATCH',
-                            body: payload,
-                            // prepareHeaders: async (headers: Headers) => await setHeaders(headers),
-                        })
-                    },
-                    invalidatesTags: (result, error, { ref_id }) => [
-                        { type: 'GetMemberschema', ref_id },
-                    ],
-                    async onQueryStarted(payload, { queryFulfilled }) {
-                        try {
-                            await queryFulfilled;
-                            toast.success('Member Updated.');
-                        } catch (err) {
-                            console.log(err);
-                            toast.error('Failed updating a member.');
-                        }
-                    },
-                    transformResponse: (response) => {
-                        return response as GetMemberschema;
-                    },
-                }
-            ),
+            updateMember: builder.mutation<GetMemberschema, Partial<GetMemberschema>>({
+                query: ({ ref_id, ...payload }) => {
+                    console.log(payload)
+                    return ({
+                        url: `${apiPaths.getMembersUrl}${payload.id}/`,
+                        method: 'PATCH',
+                        body: payload,
+                    })
+                },
+                invalidatesTags: (result, error, { ref_id }) => [
+                    { type: 'GetMemberschema', id: ref_id },
+                ],
+                transformResponse: (response) => {
+                    return response as GetMemberschema;
+                },
+            }),
 
+            // Delete Member
+
+            deleteMember: builder.mutation<GetMemberschema, number>({
+                query(id) {
+                    return {
+                        url: `${apiPaths.getMembersUrl}${id}/`,
+                        method: 'DELETE',
+                    };
+                },
+                async onQueryStarted(payload, { queryFulfilled }) {
+                    try {
+                        await queryFulfilled;
+                        toast.success('user deleted.');
+                    } catch (err) {
+                        toast.error('Failed deleting user.');
+                    }
+                },
+                invalidatesTags: (result, error, id) => [{ type: 'GetMemberschema', id }],
+
+            }),
         }),
         overrideExisting: true,
     });
 
 export default membersApi;
-export const { useGetUsersQuery, useCreateUserMutation, useUpdateMemberMutation } = membersApi;
-
-
+export const { useGetMembersQuery, useCreateUserMutation, useGetEachMemberQuery, useDeleteMemberMutation, useUpdateMemberMutation, } = membersApi;
